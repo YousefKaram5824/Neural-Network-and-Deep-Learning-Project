@@ -1,0 +1,15 @@
+algorithm,feature_x,feature_y,class_a,class_b,eta,epochs_max,use_bias,accuracy,train_mse,val_mse,epochs_run
+Perceptron,CulmenLength,FlipperLength,Adelie,Gentoo,0.01,100,True,100.0000,0.000000,0.000000,1
+Adaline,CulmenLength,FlipperLength,Adelie,Gentoo,0.01,100,True,100.0000,0.068311,0.075946,100
+Adaline,CulmenLength,CulmenDepth,Adelie,Chinstrap,0.01,200,True,100.0000,0.096133,0.090601,200
+Perceptron,CulmenLength,CulmenDepth,Adelie,Chinstrap,0.01,200,True,100.0000,0.000000,0.000000,4
+Perceptron,BodyMass,FlipperLength,Adelie,Chinstrap,0.01,500,True,80.0000,0.466667,0.400000,500
+Adaline,BodyMass,FlipperLength,Adelie,Chinstrap,0.01,500,True,70.0000,0.295929,0.397625,500
+Perceptron,CulmenLength,CulmenDepth,Chinstrap,Gentoo,0.05,200,True,97.5000,0.000000,0.050000,4
+Adaline,CulmenLength,CulmenDepth,Chinstrap,Gentoo,0.05,200,True,97.5000,0.077233,0.122561,200
+Adaline,CulmenLength,CulmenDepth,Chinstrap,Gentoo,0.05,200,False,97.5000,0.076287,0.118524,200
+Perceptron,CulmenLength,CulmenDepth,Chinstrap,Gentoo,0.05,200,False,97.5000,0.000000,0.050000,1
+Adaline,CulmenLength,FlipperLength,Adelie,Gentoo,1.5,100,True,50.0000,nan,nan,100
+Perceptron,CulmenLength,FlipperLength,Adelie,Gentoo,1.5,100,True,100.0000,0.000000,0.000000,1
+Perceptron,CulmenLength,FlipperLength,Adelie,Gentoo,1.5,100,False,100.0000,0.000000,0.000000,1
+Adaline,CulmenLength,FlipperLength,Adelie,Gentoo,1.5,100,False,50.0000,nan,nan,100
