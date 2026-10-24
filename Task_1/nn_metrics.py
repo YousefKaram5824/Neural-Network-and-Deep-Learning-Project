@@ -1,65 +1,50 @@
-"""
-Evaluation metrics (implemented from scratch - sklearn is NOT allowed).
-
-Convention:
-    +1  -> positive class
-    -1  -> negative class
-"""
-
 import numpy as np
 
 
-def confusion_matrix(y_true, y_pred, positive_label=1, negative_label=-1):
-    """
-    Build a 2x2 confusion matrix.
-
-    Returns
-    -------
-    cm : list of lists
-        [[TN, FP],
-         [FN, TP]]
-    """
-    y_true = np.asarray(y_true).ravel()
-    y_pred = np.asarray(y_pred).ravel()
-
-    TP = TN = FP = FN = 0
-    for t, p in zip(y_true, y_pred):
-        if t == positive_label and p == positive_label:
-            TP += 1
-        elif t == negative_label and p == negative_label:
-            TN += 1
-        elif t == negative_label and p == positive_label:
-            FP += 1
-        elif t == positive_label and p == negative_label:
-            FN += 1
-
-    return [[TN, FP], [FN, TP]]
+def flat(x):
+    return np.asarray(x).ravel()
 
 
-def accuracy(y_true, y_pred):
-    """Overall accuracy = (TP + TN) / total."""
-    y_true = np.asarray(y_true).ravel()
-    y_pred = np.asarray(y_pred).ravel()
-    if y_true.size == 0:
-        return 0.0
-    return float(np.mean(y_true == y_pred))
+def div(num, den):
+    return num / den if den else 0.0
 
 
-def precision(y_true, y_pred, positive_label=1, negative_label=-1):
-    cm = confusion_matrix(y_true, y_pred, positive_label, negative_label)
-    TN, FP = cm[0]
-    FN, TP = cm[1]
-    return TP / (TP + FP) if (TP + FP) > 0 else 0.0
+def count(y_true, y_pred, positive, negative):
+    res = conf_mat(y_true, y_pred, positive, negative)
+    tn, fp = res[0]
+    fn, tp = res[1]
+    return tn, fp, fn, tp
 
 
-def recall(y_true, y_pred, positive_label=1, negative_label=-1):
-    cm = confusion_matrix(y_true, y_pred, positive_label, negative_label)
-    TN, FP = cm[0]
-    FN, TP = cm[1]
-    return TP / (TP + FN) if (TP + FN) > 0 else 0.0
+def conf_mat(y_true, y_pred, positive=1, negative=-1):
+    y_true = flat(y_true)
+    y_pred = flat(y_pred)
+
+    tp = int(np.sum((y_true == positive) & (y_pred == positive)))
+    tn = int(np.sum((y_true == negative) & (y_pred == negative)))
+    fp = int(np.sum((y_true == negative) & (y_pred == positive)))
+    fn = int(np.sum((y_true == positive) & (y_pred == negative)))
+
+    return [[tn, fp], [fn, tp]]
 
 
-def f1_score(y_true, y_pred, positive_label=1, negative_label=-1):
-    p = precision(y_true, y_pred, positive_label, negative_label)
-    r = recall(y_true, y_pred, positive_label, negative_label)
-    return 2 * p * r / (p + r) if (p + r) > 0 else 0.0
+def acc(y_true, y_pred):
+    y_true = flat(y_true)
+    y_pred = flat(y_pred)
+    return float(np.mean(y_true == y_pred)) if y_true.size else 0.0
+
+
+def pre(y_true, y_pred, positive=1, negative=-1):
+    _, fp, _, tp = count(y_true, y_pred, positive, negative)
+    return div(tp, tp + fp)
+
+
+def re(y_true, y_pred, positive=1, negative=-1):
+    _, _, fn, tp = count(y_true, y_pred, positive, negative)
+    return div(tp, tp + fn)
+
+
+def f1(y_true, y_pred, positive=1, negative=-1):
+    p = pre(y_true, y_pred, positive, negative)
+    r = re(y_true, y_pred, positive, negative)
+    return div(2 * p * r, p + r)

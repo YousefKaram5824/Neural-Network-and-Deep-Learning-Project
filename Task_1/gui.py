@@ -1,20 +1,3 @@
-"""
-Penguins Classifier — Perceptron vs Adaline
-GUI built with Flet (modern Flutter-based UI).
-Compatible with Flet 1.0+
-
-Features:
-- Empty inputs by default
-- Feature normalization (z-score) for stable training
-- Plot shows RAW-scale data; model trains on normalized data
-- Sample classification auto-normalizes user input
-- Train/Test scatter + decision boundary (2 points) + Val MSE
-- Unified banner (red/green) for feedback
-- Save Plot → auto-saves to ./plots/ folder
-- MSE History dialog
-- Results Log table → auto-saves CSV to ./results_log.csv
-"""
-
 import os
 import io
 import base64
@@ -25,10 +8,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from data_loader import PenguinDataLoader
-from perceptron_model import Perceptron
-from adaline_model import Adaline
-from nn_metrics import confusion_matrix, accuracy
+from data_loader import LoadingData
+from perceptron_model import PerceptronModel
+from adaline_model import AdalineModel
+from nn_metrics import conf_mat, acc
 
 # ---------- Colors ----------
 BG = "#1e1e2e"
@@ -48,10 +31,10 @@ def main(page: ft.Page):
     page.title = "Penguins Classifier — Perceptron vs Adaline"
     page.bgcolor = BG
     page.padding = 0
-    page.window_width = 1280
-    page.window_height = 800
-    page.window_min_width = 1000
-    page.window_min_height = 650
+    page.window_width = 1280  # type: ignore
+    page.window_height = 800  # type: ignore
+    page.window_min_width = 1000  # type: ignore
+    page.window_min_height = 650  # type: ignore
 
     # ---------- Paths ----------
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,7 +46,7 @@ def main(page: ft.Page):
     if not os.path.exists(csv_path):
         csv_path = os.path.join(BASE_DIR, "penguins.csv")
 
-    loader = PenguinDataLoader(csv_path)
+    loader = LoadingData(csv_path)
 
     # ---------- State ----------
     state = {
@@ -171,22 +154,22 @@ def main(page: ft.Page):
     def show_error(msg: str):
         banner_text.value = msg
         banner_text.color = RED
-        banner_icon.name = ft.Icons.ERROR_OUTLINE
+        banner_icon.name = ft.Icons.ERROR_OUTLINE  # type: ignore
         banner_icon.color = RED
         banner.bgcolor = ERROR_BG
         banner.border = ft.Border.all(1, RED)
-        banner.content.controls[-1].icon_color = RED
+        banner.content.controls[-1].icon_color = RED  # type: ignore
         banner.visible = True
         page.update()
 
     def show_success(msg: str):
         banner_text.value = msg
         banner_text.color = GREEN
-        banner_icon.name = ft.Icons.CHECK_CIRCLE_OUTLINE
+        banner_icon.name = ft.Icons.CHECK_CIRCLE_OUTLINE  # type: ignore
         banner_icon.color = GREEN
         banner.bgcolor = SUCCESS_BG
         banner.border = ft.Border.all(1, GREEN)
-        banner.content.controls[-1].icon_color = GREEN
+        banner.content.controls[-1].icon_color = GREEN  # type: ignore
         banner.visible = True
         page.update()
 
@@ -216,8 +199,8 @@ def main(page: ft.Page):
             ],
         )
 
-    feat_x = dropdown("Feature X", loader.feature_names)
-    feat_y = dropdown("Feature Y", loader.feature_names)
+    feat_x = dropdown("Feature X", loader.features_name)
+    feat_y = dropdown("Feature Y", loader.features_name)
     class_a = dropdown("Class A (+1)", loader.species_list)
     class_b = dropdown("Class B (-1)", loader.species_list)
 
@@ -492,10 +475,10 @@ def main(page: ft.Page):
     def on_train(e):
         hide_banner()
         try:
-            fx = feat_x.controls[1].value
-            fy = feat_y.controls[1].value
-            ca = class_a.controls[1].value
-            cb = class_b.controls[1].value
+            fx = feat_x.controls[1].value  # type: ignore
+            fy = feat_y.controls[1].value  # type: ignore
+            ca = class_a.controls[1].value  # type: ignore
+            cb = class_b.controls[1].value  # type: ignore
             algo = algo_radio.value
 
             if not fx or not fy:
@@ -555,7 +538,7 @@ def main(page: ft.Page):
             page.update()
 
             if algo == "Perceptron":
-                model = Perceptron(
+                model = PerceptronModel(
                     eta=eta,
                     epochs=epochs,
                     use_bias=use_bias,
@@ -563,7 +546,7 @@ def main(page: ft.Page):
                     random_state=42,
                 )
             else:
-                model = Adaline(
+                model = AdalineModel(
                     eta=eta,
                     epochs=epochs,
                     use_bias=use_bias,
@@ -571,7 +554,7 @@ def main(page: ft.Page):
                     random_state=42,
                 )
 
-            model.fit(
+            model.fitting(  # type: ignore
                 state["X_train"],
                 state["y_train"],
                 X_val=state["X_test"],
@@ -583,15 +566,15 @@ def main(page: ft.Page):
             state["b"] = model.b if use_bias else 0.0
 
             y_pred = model.predict(state["X_test"])
-            cm = confusion_matrix(state["y_test"], y_pred)
-            acc = accuracy(state["y_test"], y_pred)
+            cm = conf_mat(state["y_test"], y_pred)
+            ac = acc(state["y_test"], y_pred)
 
             _update_plot(fx, fy, ca, cb)
-            _update_results(cm, acc, model)
+            _update_results(cm, ac, model)
 
             status_text.value = f"{algo} finished. Epochs run: {model.epochs_run}"
             page.update()
-            show_success(f"{algo} training finished — Accuracy: {acc*100:.1f}%")
+            show_success(f"{algo} training finished — Accuracy: {ac*100:.1f}%")
 
             # ---- Log this run ----
             results_log.append(
@@ -604,7 +587,7 @@ def main(page: ft.Page):
                     "eta": eta,
                     "epochs_max": epochs,
                     "use_bias": use_bias,
-                    "accuracy": acc * 100,
+                    "accuracy": ac * 100,
                     "train_mse": model.final_mse,
                     "val_mse": (
                         model.val_mse_history[-1]
@@ -794,8 +777,8 @@ def main(page: ft.Page):
             sample = np.array([[x_norm, y_norm]])
             pred = state["model"].predict(sample)[0]
 
-            ca = class_a.controls[1].value
-            cb = class_b.controls[1].value
+            ca = class_a.controls[1].value  # type: ignore
+            cb = class_b.controls[1].value  # type: ignore
             cls = ca if pred == 1 else cb
             sample_result.value = f"Prediction: {cls} ({pred:+d})"
         except ValueError as ve:
@@ -815,10 +798,10 @@ def main(page: ft.Page):
             return
 
         try:
-            fx = feat_x.controls[1].value
-            fy = feat_y.controls[1].value
-            ca = class_a.controls[1].value
-            cb = class_b.controls[1].value
+            fx = feat_x.controls[1].value  # type: ignore
+            fy = feat_y.controls[1].value  # type: ignore
+            ca = class_a.controls[1].value  # type: ignore
+            cb = class_b.controls[1].value  # type: ignore
             algo = algo_radio.value
             use_bias = bias_check.value
 
@@ -895,10 +878,10 @@ def main(page: ft.Page):
 
         # Auto-save MSE history image too
         try:
-            fx = feat_x.controls[1].value
-            fy = feat_y.controls[1].value
-            ca = class_a.controls[1].value
-            cb = class_b.controls[1].value
+            fx = feat_x.controls[1].value  # type: ignore
+            fy = feat_y.controls[1].value  # type: ignore
+            ca = class_a.controls[1].value  # type: ignore
+            cb = class_b.controls[1].value  # type: ignore
             algo = algo_radio.value
             bias_tag = "bias" if bias_check.value else "nobias"
             mse_name = f"MSE_{algo}_{ca}_vs_{cb}_{fx}_{fy}_{bias_tag}.png".replace(
@@ -1183,10 +1166,10 @@ def main(page: ft.Page):
         sample_x.value = ""
         sample_y.value = ""
 
-        feat_x.controls[1].value = None
-        feat_y.controls[1].value = None
-        class_a.controls[1].value = None
-        class_b.controls[1].value = None
+        feat_x.controls[1].value = None  # type: ignore
+        feat_y.controls[1].value = None  # type: ignore
+        class_a.controls[1].value = None  # type: ignore
+        class_b.controls[1].value = None  # type: ignore
         algo_radio.value = None
         eta_input.value = ""
         epochs_input.value = ""
