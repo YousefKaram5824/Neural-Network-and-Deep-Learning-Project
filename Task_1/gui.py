@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from data_loader import LoadingData
+from loading_and_preprocessing import LoadingData
 from perceptron_model import PerceptronModel
 from adaline_model import AdalineModel
 from nn_metrics import conf_mat, acc
